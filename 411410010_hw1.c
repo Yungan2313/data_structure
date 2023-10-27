@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-// #define DEBUG 1
+#define DEBUG 1
 struct queue{
     int x;
     int y;
@@ -100,14 +100,16 @@ int BFS(struct queue *queue, xy *hole_1,xy *hole_2,int **graph,int **trace){
         if(x == hole_1->x && y == hole_1->y){
             hole_1->x = 0;
             hole_1->y = 0;
+            // printf("%d",level);
             // printf("%d %d\n", hole_2->x, hole_2->y);
-            return 1;
+            return level-1;
         }
         else if(x == hole_2->x && y == hole_2->y){
             hole_2->x = 0;
             hole_2->y = 0;
+            // printf("%d",level);
             // printf("%d %d\n", hole_1->x, hole_1->y);
-            return 2;
+            return level-1;
         }
         //move check
         if(graph[y-1][x] == 0){//up 0
@@ -196,6 +198,7 @@ int main(){
     int **graph;//graph
     int **graph_2;//graph2
     int **trace;//trace map up1 right2 down3 left4
+    int total_steps;
     xy ball_1, ball_2;//ball x y
     xy hole_1, hole_2;//hole x y
     xy trace_hole_1, trace_hole_2;
@@ -236,7 +239,7 @@ int main(){
     queue->next = NULL;
     queue->level = 1;
     queue->prev_move = 0;
-    BFS(queue,&hole_1,&hole_2,graph,trace);
+    total_steps = BFS(queue,&hole_1,&hole_2,graph,trace);
     #ifdef DEBUG
     for(int i=0; i<n; i++){
         for(int j=0; j<n; j++){
@@ -313,7 +316,7 @@ int main(){
         printf("\n");
     }       
     #endif
-    BFS(queue_2,&hole_1,&hole_2,graph_2,trace);
+    total_steps+=BFS(queue_2,&hole_1,&hole_2,graph_2,trace);
     #ifdef DEBUG
     for(int i=0; i<n; i++){
         for(int j=0; j<n; j++){
@@ -327,4 +330,5 @@ int main(){
         printf("%d",step_2->move);
         step_2 = step_2->next;
     }
+    // printf("\n%d\n",total_steps);
 }
