@@ -179,10 +179,6 @@ void update_oddtime(struct path *currentpath,int *table,int final_table[],int n,
     }
     printf("\n");
     #endif
-    // for(int i = 0; i < test; i++){
-    //     printf("%d ", test_store[i]);
-    // }
-    // printf("test:%d\n", test);
     for(int i = 0; i < test; i++){
         temp = currentpath;
         error_check = 0;
@@ -192,7 +188,6 @@ void update_oddtime(struct path *currentpath,int *table,int final_table[],int n,
             table_node_left[j] = table_temp[j];
         }
         while(temp){
-            // printf("%d ",temp->node);
             if(table_check[temp->node] == 1){
                 error_check = 1;
                 break;
@@ -201,7 +196,6 @@ void update_oddtime(struct path *currentpath,int *table,int final_table[],int n,
             table_check[temp->node] = 1;
             if(temp->node == test_store[i]){
                 temp = table_record_node[final_table[temp->node]];
-                // printf("\n%d\n",table_record_node[final_table[temp->node]]->node);
             }
             else{
                 temp = temp->next;
@@ -225,27 +219,7 @@ void update_oddtime(struct path *currentpath,int *table,int final_table[],int n,
             }
             table_node_skip[test_store[i]] = node_skip_count;
         }
-    
-    //     printf("node:%d\ntable_check\n");
-    //     for(int i=0;i<n;i++){
-    //         printf("%d ",table_check[i]);
-    //     }
-    //     printf("\ntable node left\n");
-    //     for(int i=0;i<n;i++){
-    //         printf("%d ",table_node_left[i]);
-    //     }        
-    //     printf("\n--------------------------------------------\n");
-    //     for(int i=0;i<n;i++){
-    //         printf("%d ",table_node_skip[i]);
-    //     }
-    //     printf("\n");
-    // printf("%d----------------\n",table_node_skip[i]);
     }
-        
-    // for(int i=0;i<n;i++){
-    //     printf("%d ",table_node_skip[i]);
-    // }
-
     //-----選定要更動的路線
     max_skip_node = 0;
     for(int i = 0; i < n; i++){
@@ -309,29 +283,15 @@ int main(){
     #endif
     //algorithm---------------------------
     table_unused_check_initialize(table,table_unused,n);//要注意d 也被視為unused
-    // for(int i=0;i<9;i++){
-    //     printf("%d ",finalpath[i]);
-    // }
-    // printf("\n");
+
     while(!(table_finished)){
         //eventime------------------------
         table_unused_check(table,table_unused,n,currentpath,finaltable,table_record_node);
         update_eventime(table,finaltable,n,table_unused,table_record_node,finaloutput,stepsum);
         stepsum++;
-        // printf("eventime:%d\n",stepsum);
-        
-        // for(int i=0;i<n;i++){
-        //     printf("%d ",finaloutput[stepsum-1][i]);
-        // }
-        // printf("\n");
         //oddtime-------------------------
         update_oddtime(currentpath,table,finaltable,n,table_record_node,table_unused,finaloutput,stepsum);
         stepsum++;
-        // printf("oddtime:\n");
-        // for(int i=0;i<n;i++){
-        //     printf("%d ",finaloutput[stepsum-1][i]);
-        // }
-        // printf("\n");
         table_finished = table_finished_check(currentpath,finalpath);
     }
     for(int i = 0;i<n;i++){
