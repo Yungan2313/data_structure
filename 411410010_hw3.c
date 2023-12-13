@@ -443,7 +443,7 @@ int main(){
             // postorder_check(tree_root);
             // printf("%d\n",tree_root->height);
             for(int h = 0; h < Timeslots; h++){
-                if((h+tree_root->height)>Timeslots){
+                if((h+tree_root->height+1)>Timeslots){
                     break;
                 }
                 memories_temp_initialize(memories,tempm,NodeCount,Timeslots);
