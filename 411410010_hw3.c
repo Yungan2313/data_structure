@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 // #define DEBUG 1
-
+int pair_bfs[5000][1000];
 struct edge{
     int node;
     struct edge *next;
@@ -10,7 +10,6 @@ struct edge{
 struct req{
     int node_head;
     int node_tail;
-    int lowest_height;
 };
 struct queue{
     int node;
@@ -109,6 +108,7 @@ struct queue *q_clear(struct queue *q){
         q = q->next;
         free(temp);
     }
+    return NULL;
 }
 void queuecbt_push_back(struct queue_cbt **list,struct tree *node,int height,int ID,int new_ID){
     struct queue_cbt *new_node = malloc(sizeof(struct queue_cbt));
@@ -144,51 +144,77 @@ struct queue_cbt *qcbt_clear(struct queue_cbt *q){
         free(temp);
     }
 }
+
 struct queue *BFS(struct queue *q,int *bool_check,int end,struct edge *edge[],int NodeCount){
-    struct queue *tempq;
+    // int now,level;
+    // now = q->node;
+    // level = q->level;
+    // #ifdef DEBUG
+    // printf("%d %d\n",now,level);
+    // #endif
+    // struct edge *tempe;
+    // q = queue_pop(q);
+    // if(bool_check[now] != -1){
+    //     q = BFS(q,bool_check,end,edge,NodeCount);
+    // }
+    // else{
+    //     bool_check[now] = level;
+    //     if(now == end){
+    //         #ifdef DEBUG
+    //         tempq = q;
+    //         while(tempq){
+    //             printf("%d \n",tempq->node);
+    //             tempq = tempq->next;
+    //         }
+    //         #endif
+    //         q_clear(q);
+    //         return NULL;
+    //     }
+    //     else{
+    //         tempe = edge[now];
+    //         while(tempe){
+    //             if(bool_check[tempe->node] == -1){
+    //                 queue_push_back(&q,tempe->node,level+1);
+    //             }
+    //             tempe = tempe->next;
+    //         }
+    //         if(q != NULL){
+    //             #ifdef DEBUG
+    //             for(int i = 0;i<NodeCount;i++){
+    //                 printf("%d ",bool_check[i]);
+    //             }
+    //             printf("\n");
+    //             #endif
+    //             q = BFS(q,bool_check,end,edge,NodeCount);
+    //         }
+    //     }
+    // }
+    // return q;
     int now,level;
-    now = q->node;
-    level = q->level;
-    #ifdef DEBUG
-    printf("%d %d\n",now,level);
-    #endif
     struct edge *tempe;
-    q = queue_pop(q);
-    if(bool_check[now] != -1){
-        q = BFS(q,bool_check,end,edge,NodeCount);
-    }
-    else{
-        bool_check[now] = level;
-        if(now == end){
-            #ifdef DEBUG
-            tempq = q;
-            while(tempq){
-                printf("%d \n",tempq->node);
-                tempq = tempq->next;
-            }
-            #endif
-            return 0;
+    while(q){
+        now = q->node;
+        level = q->level;
+        q = queue_pop(q);
+        if(bool_check[now] != -1){
+            continue;
         }
         else{
-            tempe = edge[now];
-            while(tempe){
-                if(bool_check[tempe->node] == -1){
-                    queue_push_back(&q,tempe->node,level+1);
-                }
-                tempe = tempe->next;
+            bool_check[now] = level;
+            if(now == end){
+                return q;
             }
-            if(q){
-                #ifdef DEBUG
-                for(int i = 0;i<NodeCount;i++){
-                    printf("%d ",bool_check[i]);
+            else{
+                tempe = edge[now];
+                while(tempe){
+                    if(bool_check[tempe->node] == -1){
+                        queue_push_back(&q,tempe->node,level+1);
+                    }
+                    tempe = tempe->next;
                 }
-                printf("\n");
-                #endif
-                q = BFS(q,bool_check,end,edge,NodeCount);
             }
         }
     }
-    return q;
 }
 
 void trace(int *bool_check,int head,int now,int Nodecount,struct edge *edge[],int *path_record){
@@ -272,16 +298,29 @@ void postorder_check(struct tree *root){
         printf("%d:%d %d\n",root->height,root->n1,root->n2);
     }
 }
-void postorder_output(struct tree *root,int h){
-    if(root){
-        postorder_output(root->left,h);
-        postorder_output(root->right,h);
-        if(root->leaf == 1){
-            printf("%d %d %d\n",root->n1,root->n2,h+root->height);
+void postorder_output(struct tree *root,int h,int vertices){
+    struct tree *stack[vertices];
+    int top = 1,rear = 0;
+    stack[0] = root;
+    while(1){
+        if(top >= vertices){
+            break;
+        }
+        if(stack[rear]->left!=NULL && stack[rear]->right!=NULL){
+            stack[top] = stack[rear]->right;
+            top++;
+            stack[top] = stack[rear]->left;
+            top++;
+        }
+        rear++;
+    }
+    for(int i = vertices-1;i>=0;i--){
+        if(stack[i]->leaf == 1){
+            printf("%d %d %d\n",stack[i]->n1,stack[i]->n2,h+stack[i]->height);
         }
         else{
-            printf("%d %d ",root->n1,root->n2);
-            printf("%d %d %d %d %d\n",root->left->n1,root->left->n2,root->right->n1,root->right->n2,h+root->height);
+            printf("%d %d ",stack[i]->n1,stack[i]->n2);
+            printf("%d %d %d %d %d\n",stack[i]->left->n1,stack[i]->left->n2,stack[i]->right->n1,stack[i]->right->n2,h+stack[i]->height);
         }
     }
 }
@@ -362,12 +401,12 @@ int main(){
     //-------------------------------basic arrays
     scanf("%d %d %d %d",&NodeCount,&EdgeCount,&Timeslots,&ReqCount);
     int Nodememories[NodeCount];
-    struct edge *edge[EdgeCount],*tempe;
+    struct edge *edge[NodeCount],*tempe;
     struct req reqests[ReqCount];
     //-------------------------------BFS
     struct queue *BFS_q = NULL,*tempq = NULL;
     int bool_check[NodeCount];//bool_check
-    int pair_bfs[ReqCount][NodeCount+2];//注意第一個地方存的是length
+    // int pair_bfs[ReqCount][NodeCount+2];//注意第一個地方存的是length
     //-------------------------------memory + timeslot
     int **memories;
     int **tempm;
@@ -391,6 +430,17 @@ int main(){
             memories[i][j] = Nodememories[i];
         }
     }
+    #ifdef DEBUG
+    for(int i = 0;i<NodeCount;i++){
+        tempe = edge[i];
+        printf("%d: ",i);
+        while(tempe){
+            printf("%d ",tempe->node);
+            tempe = tempe->next;
+        }
+        printf("\n");
+    }
+    #endif
     //------------------------------BFS
     for(int i=0;i<ReqCount;i++){
         BFS_q = malloc(sizeof(struct queue));
@@ -430,6 +480,7 @@ int main(){
         if(pair_bfs[req_now][0]>i){
             continue;
         }
+        tree_root = tree_build(i-2);
         for(int j=req_now;j<ReqCount;j++){
             if(pair_bfs[j][0]>i){
                 req_now = j;
@@ -437,7 +488,6 @@ int main(){
             }
             int check_leaforder[pair_bfs[j][0]];
             check_leaforder_initialize(check_leaforder,pair_bfs[j][0]);
-            tree_root = tree_build(i-2);
             temp = 0;
             postorder_input(tree_root,&temp,check_leaforder,pair_bfs[j]);
             // postorder_check(tree_root);
@@ -453,13 +503,8 @@ int main(){
                     count++;
                     queuecbt_push_back(&output,tree_root,h+1,pair_bfs[j][NodeCount+1],j);
                     memories_temp_initialize(tempm,memories,NodeCount,Timeslots);
+                    tree_root = tree_build(i-2);
                     break;
-                }
-                else{
-                    // printf("None\n");
-                    if(h == Timeslots-1){
-                        tree_clear(tree_root);
-                    }
                 }
             }
             
@@ -472,7 +517,7 @@ int main(){
             printf("%d ",pair_bfs[output->new_ID][i]);
         }
         printf("\n");
-        postorder_output(output->node,output->height);
+        postorder_output(output->node,output->height,2*(pair_bfs[output->new_ID][0])-3);
         output = output->next;
     }
 }
