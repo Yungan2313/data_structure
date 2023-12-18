@@ -349,7 +349,7 @@ int tmt(struct tree *root,int **memories,int *check,int height){//tree memory te
             memories[root->n1][root->height+height-1]-=1;
             memories[root->n1][root->height+height-1]-=1;
         }
-        if(memories[root->n1][root->height+height+1]<0 || memories[root->n2][root->height+height+1]<0 || memories[root->n1][root->height+height-1]<0 || memories[root->n1][root->height+height-1]<0){
+        if(memories[root->n1][root->height+height]<0 || memories[root->n2][root->height+height]<0 || memories[root->n1][root->height+height-1]<0 || memories[root->n1][root->height+height-1]<0){
             *check = -1;
         }
     }
@@ -542,4 +542,11 @@ int main(){
         postorder_output(output->node,output->height,2*(pair_bfs[output->new_ID][0])-3);
         output = output->next;
     }
+    // for(int i=0;i<NodeCount;i++){
+    //     printf("%d\n",i);
+    //     for(int j=0;j<Timeslots;j++){
+    //         printf("%d ",memories[i][j]);
+    //     }
+    //     printf("\n");
+    // }
 }
