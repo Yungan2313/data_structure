@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <math.h>
 // #define DEBUG 1
-int pair_bfs[5000][1000];
 struct edge{
     int node;
     struct edge *next;
@@ -32,9 +31,9 @@ struct queue_cbt{
   struct queue_cbt *next;  
 };
 //function----------------------------------------------------------------
-int cmp_num(const void *a, const void *b,int level){
-    int A = (*(int (*)[2])a)[level];
-    int B = (*(int (*)[2])b)[level];
+int cmp_num(const int *a, const int *b,int level){
+    int A = a[level];
+    int B = b[level];
     if(A < B){
         return -1;
     }
@@ -46,16 +45,15 @@ int cmp_num(const void *a, const void *b,int level){
     }
 }
 int cmp(const void *a, const void *b){
-    int A = (*(int (*)[2])a)[0];
-    int B = (*(int (*)[2])b)[0];
-    int level = 0;
-    if (A < B){
+    const int *A = *(const int **)a;
+    const int *B = *(const int **)b;
+    if (A[0] < B[0]){
         return -1;
-    } else if (A > B){
+    } else if (A[0] > B[0]){
         return 1;
     } else {
         // 如果花色相同，按照數字排序
-        return cmp_num(a,b,level+1);
+        return cmp_num(A,B,1);
     }
 }
 void edge_push_back(struct edge **list,int node){
@@ -100,7 +98,14 @@ struct queue *queue_pop(struct queue *queue){
     free(temp);
     return queue;
 }
-
+int queue_isempty(struct queue *queue){
+    if(queue == NULL){
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}
 struct queue *q_clear(struct queue *q){
     struct queue *temp;
     while(q){
@@ -190,9 +195,13 @@ struct queue *BFS(struct queue *q,int *bool_check,int end,struct edge *edge[],in
     //     }
     // }
     // return q;
-    int now,level;
+    int now,level,table[NodeCount];
     struct edge *tempe;
-    while(q){
+    for(int i=0;i<NodeCount;i++){
+        table[i] = -1;
+    }
+    table[q->node] = 0;
+    while(!queue_isempty(q) && bool_check[end] == -1){
         now = q->node;
         level = q->level;
         q = queue_pop(q);
@@ -207,8 +216,9 @@ struct queue *BFS(struct queue *q,int *bool_check,int end,struct edge *edge[],in
             else{
                 tempe = edge[now];
                 while(tempe){
-                    if(bool_check[tempe->node] == -1){
+                    if(bool_check[tempe->node] == -1 && table[tempe->node] == -1){
                         queue_push_back(&q,tempe->node,level+1);
+                        table[tempe->node] = 0;
                     }
                     tempe = tempe->next;
                 }
@@ -370,10 +380,9 @@ void input_initialize(int NodeCount,int EdgeCount,int ReqCount,int *Nodememories
         scanf("%d %d",&requests[i].node_head,&requests[i].node_tail);
     }
 }
-void BFS_intialize(int *bool_check,int NodeCount,int *pair_bfs){
+void BFS_intialize(int *bool_check,int NodeCount){
     for(int i=0;i<NodeCount;i++){
         bool_check[i] = -1;
-        pair_bfs[i] = -1;
     }
 }
 void check_leaforder_initialize(int *check,int n){
@@ -406,6 +415,7 @@ int main(){
     //-------------------------------BFS
     struct queue *BFS_q = NULL,*tempq = NULL;
     int bool_check[NodeCount];//bool_check
+    int **pair_bfs;
     // int pair_bfs[ReqCount][NodeCount+2];//注意第一個地方存的是length
     //-------------------------------memory + timeslot
     int **memories;
@@ -423,11 +433,18 @@ int main(){
     input_initialize(NodeCount,EdgeCount,ReqCount,Nodememories,edge,reqests);
     memories = malloc(NodeCount*sizeof(int *));
     tempm = malloc(NodeCount*sizeof(int *));
+    pair_bfs = malloc(ReqCount*sizeof(int *));
     for(int i = 0;i<NodeCount;i++){
         memories[i] = malloc(Timeslots*sizeof(int));
         tempm[i] = malloc(Timeslots*sizeof(int));
         for(int j = 0;j<Timeslots;j++){
             memories[i][j] = Nodememories[i];
+        }
+    }
+    for(int i = 0;i<ReqCount;i++){
+        pair_bfs[i] = malloc((NodeCount+2)*sizeof(int));
+        for(int j = 0;j<NodeCount+2;j++){
+            pair_bfs[i][j] = -1;
         }
     }
     #ifdef DEBUG
@@ -443,12 +460,17 @@ int main(){
     #endif
     //------------------------------BFS
     for(int i=0;i<ReqCount;i++){
-        BFS_q = malloc(sizeof(struct queue));
-        BFS_q->node = reqests[i].node_head;
-        BFS_q->next = NULL;
-        BFS_q->level = 0;
-        BFS_intialize(bool_check,NodeCount,pair_bfs[i]);
+        // BFS_q = malloc(sizeof(struct queue));
+        // BFS_q->node = reqests[i].node_head;
+        // BFS_q->next = NULL;
+        // BFS_q->level = 0;
+        queue_push_back(&BFS_q,reqests[i].node_head,0);
+        BFS_intialize(bool_check,NodeCount);
         BFS_q = BFS(BFS_q,bool_check,reqests[i].node_tail,edge,NodeCount);
+        // for(int j=0;j<NodeCount;j++){
+        //     printf("%d ",bool_check[j]);
+        // }
+        // printf("\n");
         //trace
         trace(bool_check,reqests[i].node_head,reqests[i].node_tail,NodeCount,edge,pair_bfs[i]);
         pair_bfs[i][NodeCount+1] = i;
@@ -468,7 +490,7 @@ int main(){
     #ifdef DEBUG
     for(int i=0;i<ReqCount;i++){
         printf("%d: ",i);
-        for(int j = 0;j<NodeCount;j++){
+        for(int j = 0;j<NodeCount+2;j++){
             printf("%d ",pair_bfs[i][j]);
         }
         printf("\n"); 
