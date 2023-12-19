@@ -347,9 +347,16 @@ int tmt(struct tree *root,int **memories,int *check,int height){//tree memory te
         memories[root->n2][root->height+height]-=1;
         if(root->leaf == 1){
             memories[root->n1][root->height+height-1]-=1;
-            memories[root->n1][root->height+height-1]-=1;
+            memories[root->n2][root->height+height-1]-=1;
         }
-        if(memories[root->n1][root->height+height]<0 || memories[root->n2][root->height+height]<0 || memories[root->n1][root->height+height-1]<0 || memories[root->n1][root->height+height-1]<0){
+        // for(int i=0;i<50;i++){
+        //     printf("%d\n",i);
+        //     for(int j=0;j<10;j++){
+        //         printf("%d ",memories[i][j]);
+        //     }
+        //     printf("\n");
+        // }
+        if(memories[root->n1][root->height+height]<0 || memories[root->n2][root->height+height]<0 || memories[root->n1][root->height+height-1]<0 || memories[root->n2][root->height+height-1]<0){
             *check = -1;
         }
     }
@@ -529,7 +536,6 @@ int main(){
                     break;
                 }
             }
-            
         }
     }
     printf("%d\n",count);
